@@ -55,6 +55,9 @@ MyApplet.prototype = {
     },
     XRP: {
       url: 'https://api.bitso.com/v3/ticker?book=xrp_mxn'
+    },
+    LTC: {
+      url: 'https://api.bitso.com/v3/ticker?book=ltc_mxn'
     }
   },
 
@@ -76,7 +79,11 @@ MyApplet.prototype = {
         this.loadJsonAsync(this._services.ETH.url, function(dataEth) {
           let btcXrpEth = btcXrp + ', ETH:' + dataEth.payload.last;
 
-          this.set_applet_label(_(btcXrpEth));
+          this.loadJsonAsync(this._services.LTC.url, function(dataLtc) {
+            let btcXrpEthLtc = btcXrpEth + ', LTC:' + dataLtc.payload.last;
+
+            this.set_applet_label(_(btcXrpEthLtc));
+          });
         });
       });
     });
