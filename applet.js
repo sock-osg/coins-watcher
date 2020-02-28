@@ -74,13 +74,13 @@ MyApplet.prototype = {
       let btc = 'BTC:' + dataBtc.payload.last;
 
       this.loadJsonAsync(this._services.XRP.url, function(dataXrp) {
-        let btcXrp = btc + ', XRP:' + dataXrp.payload.last;
+        let btcXrp = btc + ' | XRP:' + dataXrp.payload.last;
 
         this.loadJsonAsync(this._services.ETH.url, function(dataEth) {
-          let btcXrpEth = btcXrp + ', ETH:' + dataEth.payload.last;
+          let btcXrpEth = btcXrp + ' | ETH:' + dataEth.payload.last;
 
           this.loadJsonAsync(this._services.LTC.url, function(dataLtc) {
-            let btcXrpEthLtc = btcXrpEth + ', LTC:' + dataLtc.payload.last;
+            let btcXrpEthLtc = btcXrpEth + ' | LTC:' + dataLtc.payload.last;
 
             this.set_applet_label(_(btcXrpEthLtc));
           });
@@ -91,7 +91,7 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panelHeight, instanceId) {
-  let myModule = imports.ui.appletManager.applets[metadata.uuid];
+  //let myModule = imports.ui.appletManager.applets[metadata.uuid];
   let myApplet = new MyApplet(metadata, orientation, panelHeight, instanceId);
   return myApplet;
 }
