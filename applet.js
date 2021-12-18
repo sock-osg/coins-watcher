@@ -9,8 +9,12 @@ const _httpSession = new Soup.SessionAsync();
 
 Soup.Session.prototype.add_feature.call(_httpSession, new Soup.ProxyResolverDefault());
 
+const coinPriceUrl = 'https://api.bitso.com/v3/ticker?book='
+const supportedCoins = [ 'BTC', 'ETH', 'XRP', 'LTC', 'MANA' ]
+let coinCounter = 0
+
 Debugger = {
-  logLevel: 0,
+  logLevel: 1,
   setLogLevel: function(level) {
     this.log("Setting new log level: "+level, 1);
     this.logLevel = level;
@@ -42,26 +46,19 @@ MyApplet.prototype = {
   },
 
   _runWatcher: function() {
-    this.refreshPrices();
-    Mainloop.timeout_add_seconds(10, Lang.bind(this, this._runWatcher));
-  },
+    this.refreshPrices(supportedCoins[coinCounter]);
 
-  _services: {
-    BTC: {
-      url: 'https://api.bitso.com/v3/ticker?book=btc_mxn'
-    },
-    ETH: {
-      url: 'https://api.bitso.com/v3/ticker?book=eth_mxn'
-    },
-    XRP: {
-      url: 'https://api.bitso.com/v3/ticker?book=xrp_mxn'
-    },
-    LTC: {
-      url: 'https://api.bitso.com/v3/ticker?book=ltc_mxn'
+    if (coinCounter < supportedCoins.length) {
+      coinCounter++
     }
+    if (coinCounter >= supportedCoins.length) {
+      coinCounter = 0
+    }
+
+    Mainloop.timeout_add_seconds(3, Lang.bind(this, this._runWatcher));
   },
 
-  loadJsonAsync: function loadJsonAsync(url, callback) {
+  loadJsonAsync: function(url, callback) {
     let context = this;
     let message = Soup.Message.new('GET', url);
     _httpSession.queue_message(message, function soupQueue(session, response) {
@@ -69,23 +66,9 @@ MyApplet.prototype = {
     })
   },
 
-  refreshPrices: function refreshPrices(recurse) {
-    this.loadJsonAsync(this._services.BTC.url, function(dataBtc) {
-      let btc = 'BTC:' + dataBtc.payload.last;
-
-      this.loadJsonAsync(this._services.XRP.url, function(dataXrp) {
-        let btcXrp = btc + ' | XRP:' + dataXrp.payload.last;
-
-        this.loadJsonAsync(this._services.ETH.url, function(dataEth) {
-          let btcXrpEth = btcXrp + ' | ETH:' + dataEth.payload.last;
-
-          this.loadJsonAsync(this._services.LTC.url, function(dataLtc) {
-            let btcXrpEthLtc = btcXrpEth + ' | LTC:' + dataLtc.payload.last;
-
-            this.set_applet_label(_(btcXrpEthLtc));
-          });
-        });
-      });
+  refreshPrices: function(coin) {
+    this.loadJsonAsync(`${coinPriceUrl}${coin.toLowerCase()}_mxn`, function(dataBtc) {
+      this.set_applet_label(_(`${coin}: ${dataBtc.payload.last}`));
     });
   }
 };
