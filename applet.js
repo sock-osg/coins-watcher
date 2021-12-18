@@ -68,7 +68,7 @@ MyApplet.prototype = {
 
   refreshPrices: function(coin) {
     this.loadJsonAsync(`${coinPriceUrl}${coin.toLowerCase()}_mxn`, function(dataBtc) {
-      this.set_applet_label(_(`${coin}: ${dataBtc.payload.last}`));
+      this.set_applet_label(_(`${coin}:\t➥ = ${dataBtc.payload.last}\t⬇ = ${dataBtc.payload.low}\t⬆ = ${dataBtc.payload.high}`));
     });
   }
 };
