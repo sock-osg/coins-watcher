@@ -10,14 +10,12 @@ const _httpSession = new Soup.SessionAsync()
 Soup.Session.prototype.add_feature.call(_httpSession, new Soup.ProxyResolverDefault())
 
 const coinPriceUrl = 'https://api.bitso.com/v3/ticker?book='
-const supportedCoins = [ 'BTC', 'ETH', 'XRP', 'LTC', 'MANA' ]
+const supportedCoins = [ 'BTC', 'ETH', 'XRP', 'LTC', 'MANA', 'DAI', 'BAT' ]
 let coinCounter = 0
 
 var formatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
-
-  // These options are needed to round to whole numbers if that's what you want.
   //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
   maximumFractionDigits: 3, // (causes 2500.99 to be printed as $2,501)
 })
@@ -36,7 +34,11 @@ Debugger = {
     //if (level <= this.logLevel) {
       global.log(message)
     //}
-	}
+	},
+
+  logError: function(error) {
+    global.logError(error)
+  }
 }
 
 function MyApplet(metadata, orientation, panel_height, instance_id) {
@@ -49,9 +51,15 @@ MyApplet.prototype = {
   _init: function(metadata, orientation, panelHeight, instanceId) {
     Applet.TextIconApplet.prototype._init.call(this, orientation, panelHeight, instanceId)
 
-    this._metadata = metadata
+    try {
+      //this.set_applet_icon_name("network");
 
-    this._runWatcher()
+      this._metadata = metadata
+
+      this._runWatcher()
+    } catch (error) {
+      Debugger.logError(error);
+    }
   },
 
   _runWatcher: function() {
@@ -64,7 +72,7 @@ MyApplet.prototype = {
       coinCounter = 0
     }
 
-    Mainloop.timeout_add_seconds(5, Lang.bind(this, this._runWatcher))
+    Mainloop.timeout_add_seconds(3, Lang.bind(this, this._runWatcher))
   },
 
   loadJsonAsync: function(url, callback) {
