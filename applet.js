@@ -13,10 +13,19 @@ const coinPriceUrl = 'https://api.bitso.com/v3/ticker?book='
 const supportedCoins = [ 'BTC', 'ETH', 'XRP', 'LTC', 'MANA' ]
 let coinCounter = 0
 
+var formatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+
+  // These options are needed to round to whole numbers if that's what you want.
+  //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+  //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+});
+
 Debugger = {
   logLevel: 1,
   setLogLevel: function(level) {
-    this.log("Setting new log level: "+level, 1);
+    this.log(`Setting new log level: ${level}`, 1);
     this.logLevel = level;
   },
 
@@ -55,7 +64,7 @@ MyApplet.prototype = {
       coinCounter = 0
     }
 
-    Mainloop.timeout_add_seconds(3, Lang.bind(this, this._runWatcher));
+    Mainloop.timeout_add_seconds(5, Lang.bind(this, this._runWatcher));
   },
 
   loadJsonAsync: function(url, callback) {
@@ -68,7 +77,8 @@ MyApplet.prototype = {
 
   refreshPrices: function(coin) {
     this.loadJsonAsync(`${coinPriceUrl}${coin.toLowerCase()}_mxn`, function(dataBtc) {
-      this.set_applet_label(_(`${coin}:\t➥ = ${dataBtc.payload.last}\t⬇ = ${dataBtc.payload.low}\t⬆ = ${dataBtc.payload.high}`));
+      this.set_applet_tooltip(_(`${coin}\n⬆ = ${formatter.format(dataBtc.payload.high)}\n⬇ = ${formatter.format(dataBtc.payload.low)}`));
+      this.set_applet_label(_(`${coin}:  ${formatter.format(dataBtc.payload.last)}`));
     });
   }
 };
