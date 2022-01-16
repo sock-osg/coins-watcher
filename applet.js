@@ -9,8 +9,12 @@ const _httpSession = new Soup.SessionAsync()
 
 Soup.Session.prototype.add_feature.call(_httpSession, new Soup.ProxyResolverDefault())
 
+const UUID = "coins-watcher@oz.com";
+const APPLET_PATH = imports.ui.appletManager.appletMeta[UUID].path;
 const coinPriceUrl = 'https://api.bitso.com/v3/ticker?book='
-const supportedCoins = [ 'BTC', 'ETH', 'XRP', 'LTC', 'MANA', 'DAI', 'BAT' ]
+const supportedCoins = [ 'BTC', 'ETH', 'XRP', 'MANA', 'BAT' ]
+const refreshTimeInSeconds = 3
+
 let coinCounter = 0
 
 var formatter = new Intl.NumberFormat('en-US', {
@@ -72,7 +76,7 @@ MyApplet.prototype = {
       coinCounter = 0
     }
 
-    Mainloop.timeout_add_seconds(3, Lang.bind(this, this._runWatcher))
+    Mainloop.timeout_add_seconds(refreshTimeInSeconds, Lang.bind(this, this._runWatcher))
   },
 
   loadJsonAsync: function(url, callback) {
@@ -84,9 +88,12 @@ MyApplet.prototype = {
   },
 
   refreshPrices: function(coin) {
-    this.loadJsonAsync(`${coinPriceUrl}${coin.toLowerCase()}_mxn`, function(dataBtc) {
-      this.set_applet_tooltip(_(`${coin}\n⬆ = ${formatter.format(dataBtc.payload.high)}\n⬇ = ${formatter.format(dataBtc.payload.low)}`))
-      this.set_applet_label(_(`${coin}:  ${formatter.format(dataBtc.payload.last)}`))
+    const lowCaseCoinName = coin.toLowerCase();
+
+    this.loadJsonAsync(`${coinPriceUrl}${lowCaseCoinName}_mxn`, function(dataCoin) {
+      this.set_applet_tooltip(_(`${coin}\n⬆ = ${formatter.format(dataCoin.payload.high)}\n⬇ = ${formatter.format(dataCoin.payload.low)}`))
+      this.set_applet_icon_path(`${APPLET_PATH}/icons/${lowCaseCoinName}.svg`);
+      this.set_applet_label(_(` ${formatter.format(dataCoin.payload.last)}`))
     })
   }
 }
